@@ -80,6 +80,8 @@ CONF_MOTION_PRESET = "motion_preset"
 CONF_NO_MOTION_PRESET = "no_motion_preset"
 CONF_TPI_COEF_INT = "tpi_coef_int"
 CONF_TPI_COEF_EXT = "tpi_coef_ext"
+CONF_TPI_THRESHOLD_LOW = "tpi_threshold_low"
+CONF_TPI_THRESHOLD_HIGH = "tpi_threshold_high"
 CONF_PRESENCE_SENSOR = "presence_sensor_entity_id"
 CONF_PRESET_POWER = "power_temp"
 CONF_MINIMAL_ACTIVATION_DELAY = "minimal_activation_delay"
@@ -194,10 +196,12 @@ HVAC_OFF_REASON_NAME = "hvac_off_reason"
 HVAC_OFF_REASON_MANUAL = "manual"
 HVAC_OFF_REASON_AUTO_START_STOP = "auto_start_stop"
 HVAC_OFF_REASON_WINDOW_DETECTION = "window_detection"
+HVAC_OFF_REASON_SLEEP_MODE = "sleep_mode"
 HVAC_OFF_REASONS = Literal[  # pylint: disable=invalid-name
     HVAC_OFF_REASON_MANUAL,
     HVAC_OFF_REASON_AUTO_START_STOP,
     HVAC_OFF_REASON_WINDOW_DETECTION,
+    HVAC_OFF_REASON_SLEEP_MODE,
 ]
 
 DEFAULT_SHORT_EMA_PARAMS = {
@@ -388,6 +392,7 @@ SERVICE_SET_SAFETY = "set_safety"
 SERVICE_SET_WINDOW_BYPASS = "set_window_bypass"
 SERVICE_SET_AUTO_REGULATION_MODE = "set_auto_regulation_mode"
 SERVICE_SET_AUTO_FAN_MODE = "set_auto_fan_mode"
+SERVICE_SET_HVAC_MODE_SLEEP = "set_hvac_mode_sleep"
 
 DEFAULT_SAFETY_MIN_ON_PERCENT = 0.5
 DEFAULT_SAFETY_DEFAULT_ON_PERCENT = 0.1
@@ -413,6 +418,7 @@ CENTRAL_MODES = [
     CENTRAL_MODE_FROST_PROTECTION,
 ]
 
+HVACMODE_SLEEP = "sleep"
 
 #  A special regulation parameter suggested by @Maia here: https://github.com/jmcollin78/versatile_thermostat/discussions/154
 class RegulationParamSlow:

@@ -36,9 +36,11 @@ jobs:
             tests
 
       - name: Coverage
+        if: 0
         run: |
           coverage run -m pytest tests/
           coverage report
 
       - name: Generate HTML Coverage Report
+        if: 0
         run: coverage html

@@ -439,6 +439,7 @@ class LastTemperatureSensor(VersatileThermostatBaseEntity, SensorEntity):
         """Initialize the last temperature datetime sensor"""
         super().__init__(hass, unique_id, entry_infos.get(CONF_NAME))
         self._attr_name = "Last temperature date"
+        self._attr_entity_registry_enabled_default = False
         self._attr_unique_id = f"{self._device_name}_last_temp_datetime"
 
     @callback
@@ -468,6 +469,7 @@ class LastExtTemperatureSensor(VersatileThermostatBaseEntity, SensorEntity):
         """Initialize the last temperature datetime sensor"""
         super().__init__(hass, unique_id, entry_infos.get(CONF_NAME))
         self._attr_name = "Last external temperature date"
+        self._attr_entity_registry_enabled_default = False
         self._attr_unique_id = f"{self._device_name}_last_ext_temp_datetime"
 
     @callback
@@ -721,7 +723,10 @@ class NbActiveDeviceForBoilerSensor(SensorEntity):
         self._entities = []
         underlying_entities_id = []
 
-        component: EntityComponent[ClimateEntity] = self.hass.data[CLIMATE_DOMAIN]
+        component: EntityComponent[ClimateEntity] = self.hass.data.get(CLIMATE_DOMAIN)
+        if component is None:
+            _LOGGER.warning("%s - No climate component found in hass.data", self)
+            return
         for entity in component.entities:
             if isinstance(entity, BaseThermostat) and entity.is_used_by_central_boiler:
                 self._entities.append(entity)

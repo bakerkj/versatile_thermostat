@@ -159,6 +159,8 @@ FULL_CENTRAL_CONFIG = {
     CONF_STEP_TEMPERATURE: 0.1,
     CONF_TPI_COEF_INT: 0.5,
     CONF_TPI_COEF_EXT: 0.02,
+    CONF_TPI_THRESHOLD_LOW: 0.0,
+    CONF_TPI_THRESHOLD_HIGH: 0.0,
     "frost_temp": 10,
     "eco_temp": 17.1,
     "comfort_temp": 0,
@@ -203,6 +205,8 @@ FULL_CENTRAL_CONFIG_WITH_BOILER = {
     CONF_STEP_TEMPERATURE: 0.1,
     CONF_TPI_COEF_INT: 0.5,
     CONF_TPI_COEF_EXT: 0.02,
+    CONF_TPI_THRESHOLD_LOW: 0.0,
+    CONF_TPI_THRESHOLD_HIGH: 0.0,
     "frost_temp": 10,
     "eco_temp": 17.1,
     "comfort_temp": 0,
@@ -352,6 +356,12 @@ class MockUnavailableClimate(ClimateEntity):
         self._attr_temperature_unit = UnitOfTemperature.CELSIUS
         self._attr_fan_mode = None
 
+    @property
+    def supported_features(self) -> int:
+        """The supported feature of this climate entity"""
+        ret = ClimateEntityFeature.TARGET_TEMPERATURE
+        return ret
+
 
 class MagicMockClimate(MagicMock):
     """A Magic Mock class for a underlying climate entity"""
@@ -432,6 +442,15 @@ class MagicMockClimate(MagicMock):
     def max_temp(self):  # pylint: disable=missing-function-docstring
         return 19
 
+    @property
+    def current_humidity(self):  # pylint: disable=missing-function-docstring
+        return 40
+
+    @property
+    def extra_restore_state_data(self) -> Dict[str, Any]:  # pylint: disable=missing-function-docstring
+        """To disable the error when restoring the state/storing the state"""
+        return {}
+
 
 class MagicMockClimateWithTemperatureRange(MagicMock):
     """A Magic Mock class for a underlying climate entity"""
@@ -511,6 +530,15 @@ class MagicMockClimateWithTemperatureRange(MagicMock):
     @property
     def max_temp(self):  # pylint: disable=missing-function-docstring
         return 31
+
+    @property
+    def current_humidity(self):  # pylint: disable=missing-function-docstring
+        return 40
+
+    @property
+    def extra_restore_state_data(self) -> Dict[str, Any]:  # pylint: disable=missing-function-docstring
+        """To disable the error when restoring the state/storing the state"""
+        return {}
 
 
 class MockSwitch(SwitchEntity):
@@ -689,6 +717,7 @@ async def send_temperature_change_event(
     )
     dearm_window_auto = await entity._async_temperature_changed(temp_event)
     if sleep:
+        await entity.hass.async_block_till_done()
         await asyncio.sleep(0.1)
 
     return dearm_window_auto
@@ -716,6 +745,7 @@ async def send_last_seen_temperature_change_event(
     )
     await entity._async_last_seen_temperature_changed(last_seen_event)
     if sleep:
+        await entity.hass.async_block_till_done()
         await asyncio.sleep(0.1)
 
 
@@ -742,6 +772,7 @@ async def send_ext_temperature_change_event(
     )
     await entity._async_ext_temperature_changed(temp_event)
     if sleep:
+        await entity.hass.async_block_till_done()
         await asyncio.sleep(0.1)
 
 
@@ -769,6 +800,7 @@ async def send_power_change_event(entity: BaseThermostat, new_power, date, sleep
     await vtherm_api.central_power_manager._do_immediate_shedding()
     if sleep:
         await entity.hass.async_block_till_done()
+        await asyncio.sleep(0.1)
 
 
 async def send_max_power_change_event(
@@ -797,6 +829,7 @@ async def send_max_power_change_event(
     await vtherm_api.central_power_manager._do_immediate_shedding()
     if sleep:
         await entity.hass.async_block_till_done()
+        await asyncio.sleep(0.1)
 
 
 async def send_window_change_event(
@@ -828,7 +861,10 @@ async def send_window_change_event(
         },
     )
     ret = await entity.window_manager._window_sensor_changed(window_event)
+    # For test we need to desarm the window timer
+    entity.window_manager.dearm_window_timer()
     if sleep:
+        await entity.hass.async_block_till_done()
         await asyncio.sleep(0.1)
     return ret
 
@@ -863,6 +899,7 @@ async def send_motion_change_event(
     )
     ret = await entity.motion_manager._motion_sensor_changed(motion_event)
     if sleep:
+        await entity.hass.async_block_till_done()
         await asyncio.sleep(0.1)
     return ret
 
@@ -897,6 +934,7 @@ async def send_presence_change_event(
     )
     ret = await vtherm._presence_manager._presence_sensor_changed(presence_event)
     if sleep:
+        await vtherm.hass.async_block_till_done()
         await asyncio.sleep(0.1)
     return ret
 
@@ -947,6 +985,7 @@ async def send_climate_change_event(
     )
     ret = await entity._async_climate_changed(climate_event)
     if sleep:
+        await entity.hass.async_block_till_done()
         await asyncio.sleep(0.1)
     return ret
 
@@ -997,6 +1036,7 @@ async def send_climate_change_event_with_temperature(
     )
     ret = await entity._async_climate_changed(climate_event)
     if sleep:
+        await entity.hass.async_block_till_done()
         await asyncio.sleep(0.1)
     return ret
 
@@ -1144,3 +1184,15 @@ async def do_central_power_refresh(hass):
     """Do a central power refresh"""
     await VersatileThermostatAPI.get_vtherm_api().central_power_manager.refresh_state()
     return await hass.async_block_till_done()
+
+
+async def wait_for_local_condition(check_condition: Callable[[], bool], timeout: float = 5.0):
+    """Waits that a local condition is satisfied, with a timeout."""
+    start_time = asyncio.get_event_loop().time()
+
+    while not check_condition():
+        if asyncio.get_event_loop().time() - start_time > timeout:
+            raise TimeoutError("La condition locale n'a pas été satisfaite.")
+
+        # Le minimum pour laisser l'event loop s'exécuter
+        await asyncio.sleep(0)

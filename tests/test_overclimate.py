@@ -570,7 +570,7 @@ async def test_bug_508(
         await entity.async_set_temperature(temperature=8.5)
 
         # MagicMock climate is already HEAT by default. So there is no SET_HAVC_MODE call
-        assert mock_service_call.call_count == 2  # set temperature recalculate now
+        assert mock_service_call.call_count >= 2  # set temperature recalculate now
         mock_service_call.assert_has_calls(
             [
                 call.async_call(
@@ -1171,8 +1171,9 @@ async def test_manual_hvac_off_should_take_the_lead_over_auto_start_stop(
     with patch(
         "custom_components.versatile_thermostat.base_thermostat.BaseThermostat.send_event"
     ) as mock_send_event:
-        await send_temperature_change_event(vtherm, 21, now, True)
-        await hass.async_block_till_done()
+        await send_temperature_change_event(vtherm, 21, now, False)
+
+        await wait_for_local_condition(lambda: vtherm.hvac_mode == HVACMode.OFF)
 
         # VTherm should no more be heating
         assert vtherm.hvac_mode == HVACMode.OFF

@@ -66,7 +66,7 @@
           "use_motion_feature": "Avec détection de mouvement",
           "use_power_feature": "Avec gestion de la puissance",
           "use_presence_feature": "Avec détection de présence",
-          "use_central_boiler_feature": "Ajouter une chaudière centrale. Cochez pour ajouter un controle sur une chaudière centrale. Vous devrez ensuite configurer les VTherms qui commande la chaudière centrale pour que cette option prenne effet. Si au moins un des VTherm a besoin de chauffer, la chaudière centrale sera activée. Si aucun VTherm n'a besoin de chauffer, elle sera éteinte. Les commandes pour allumer/éteindre la chaudière centrale sont données dans la page de configuration suivante.",
+          "use_central_boiler_feature": "Ajouter une chaudière centrale. Cochez pour ajouter un contrôle sur une chaudière centrale. Vous devrez ensuite configurer les VTherms qui commandent la chaudière centrale pour que cette option prenne effet. Si au moins un des VTherm a besoin de chauffer, la chaudière centrale sera activée. Si aucun VTherm n'a besoin de chauffer, elle sera éteinte. Les commandes pour allumer/éteindre la chaudière centrale sont données dans la page de configuration suivante.",
           "use_auto_start_stop_feature": "Avec démarrage et extinction automatique"
         }
       },
@@ -109,12 +109,20 @@
         "data": {
           "tpi_coef_int": "coeff_int",
           "tpi_coef_ext": "coeff_ext",
+          "tpi_threshold_low": "TPI seuil bas",
+          "tpi_threshold_high": "TPI seuil haut",
+          "minimal_activation_delay": "Délai minimal d'activation",
+          "minimal_deactivation_delay": "Délai de désactivation minimal",
           "use_tpi_central_config": "Utiliser la configuration TPI centrale"
         },
         "data_description": {
           "tpi_coef_int": "Coefficient à utiliser pour le delta de température interne",
           "tpi_coef_ext": "Coefficient à utiliser pour le delta de température externe",
-          "use_tpi_central_config": "Cochez pour utiliser la configuration TPI centrale. Décochez et saisissez les attributs pour utiliser une configuration TPI spécifique"
+          "tpi_threshold_low": "Seuil en ° en dessous duquel le TPI sera activé. 0 signifie pas de seuil",
+          "tpi_threshold_high": "Seuil en ° au-dessus duquel l'algorithme TPI sera désactivé. 0 signifie pas de seuil",
+          "use_tpi_central_config": "Cochez pour utiliser la configuration TPI centrale. Décochez et saisissez les attributs pour utiliser une configuration TPI spécifique",
+          "minimal_activation_delay": "Délai en secondes en-dessous duquel l'équipement ne sera pas activé",
+          "minimal_deactivation_delay": "Délai en secondes en-dessous duquel l'équipement se laissé actif"
         }
       },
       "presets": {
@@ -199,16 +207,12 @@
         "title": "Paramètres avancés",
         "description": "Configuration des paramètres avancés. Laissez les valeurs par défaut si vous ne savez pas ce que vous faites.\nCes paramètres peuvent induire des mauvais comportements du thermostat&nbsp;[![?](https://img.icons8.com/color/18/help.png)](https://github.com/jmcollin78/versatile_thermostat/blob/main/documentation/fr/feature-advanced.md)",
         "data": {
-          "minimal_activation_delay": "Délai minimal d'activation",
-          "minimal_deactivation_delay": "Délai de désactivation minimal",
           "safety_delay_min": "Délai maximal entre 2 mesures de températures",
           "safety_min_on_percent": "Pourcentage minimal de puissance",
           "safety_default_on_percent": "Pourcentage de puissance a utiliser en mode securité",
           "use_advanced_central_config": "Utiliser la configuration centrale avancée"
         },
         "data_description": {
-          "minimal_activation_delay": "Délai en secondes en-dessous duquel l'équipement ne sera pas activé",
-          "minimal_deactivation_delay": "Délai en secondes en-dessous duquel l'équipement se laissé actif",
           "safety_delay_min": "Délai maximal autorisé en minutes entre 2 mesures de températures. Au-dessus de ce délai, le thermostat se mettra en position de sécurité",
           "safety_min_on_percent": "Seuil minimal de pourcentage de chauffage en-dessous duquel le préréglage sécurité ne sera jamais activé",
           "safety_default_on_percent": "Valeur par défaut pour le pourcentage de chauffage en mode sécurité. Mettre 0 pour éteindre le radiateur en mode sécurité",
@@ -217,7 +221,7 @@
       },
       "central_boiler": {
         "title": "Contrôle de la chaudière centrale",
-        "description": "Donnez les services à appeler pour allumer/éteindre la chaudière centrale. Le service a appelé doit être formatté comme suit: `entity_id/service_name[/attribut:valeur]` (/attribut:valeur est facultatif)\nPar exemple:\n- pour allumer un switch: `switch.controle_chaudiere/switch.turn_on`\n- pour éteindre un switch: `switch.controle_chaudiere/switch.turn_off`\n- pour programmer la chaudière sur 25° et ainsi forcer son allumage: `climate.thermostat_chaudiere/climate.set_temperature/temperature:25`\n- pour envoyer 10° à la chaudière et ainsi forcer son extinction: `climate.thermostat_chaudiere/climate.set_temperature/temperature:10`&nbsp;[![?](https://img.icons8.com/color/18/help.png)](https://github.com/jmcollin78/versatile_thermostat/blob/main/documentation/fr/feature-central-boiler.md)",
+        "description": "Donnez les services à appeler pour allumer/éteindre la chaudière centrale. Le service à appeler doit être formatté comme suit: `entity_id/service_name[/attribut:valeur]` (/attribut:valeur est facultatif)\nPar exemple:\n- pour allumer un switch: `switch.controle_chaudiere/switch.turn_on`\n- pour éteindre un switch: `switch.controle_chaudiere/switch.turn_off`\n- pour programmer la chaudière sur 25° et ainsi forcer son allumage: `climate.thermostat_chaudiere/climate.set_temperature/temperature:25`\n- pour envoyer 10° à la chaudière et ainsi forcer son extinction: `climate.thermostat_chaudiere/climate.set_temperature/temperature:10`&nbsp;[![?](https://img.icons8.com/color/18/help.png)](https://github.com/jmcollin78/versatile_thermostat/blob/main/documentation/fr/feature-central-boiler.md)",
         "data": {
           "central_boiler_activation_service": "Commande pour allumer",
           "central_boiler_deactivation_service": "Commande pour éteindre"
@@ -322,7 +326,7 @@
           "use_motion_feature": "Avec détection de mouvement",
           "use_power_feature": "Avec gestion de la puissance",
           "use_presence_feature": "Avec détection de présence",
-          "use_central_boiler_feature": "Ajouter une chaudière centrale. Cochez pour ajouter un controle sur une chaudière centrale. Vous devrez ensuite configurer les VTherms qui commande la chaudière centrale pour que cette option prenne effet. Si au moins un des VTherm a besoin de chauffer, la chaudière centrale sera activée. Si aucun VTherm n'a besoin de chauffer, elle sera éteinte. Les commandes pour allumer/éteindre la chaudière centrale sont données dans la page de configuration suivante.",
+          "use_central_boiler_feature": "Ajouter une chaudière centrale. Cochez pour ajouter un contrôle sur une chaudière centrale. Vous devrez ensuite configurer les VTherms qui commandent la chaudière centrale pour que cette option prenne effet. Si au moins un des VTherm a besoin de chauffer, la chaudière centrale sera activée. Si aucun VTherm n'a besoin de chauffer, elle sera éteinte. Les commandes pour allumer/éteindre la chaudière centrale sont données dans la page de configuration suivante.",
           "use_auto_start_stop_feature": "Avec démarrage et extinction automatique"
         }
       },
@@ -339,7 +343,7 @@
           "auto_regulation_periode_min": "Période minimale de régulation",
           "auto_regulation_use_device_temp": "Compenser la température interne du sous-jacent",
           "inverse_switch_command": "Inverser la commande",
-          "auto_fan_mode": " Auto ventilation mode",
+          "auto_fan_mode": "Auto ventilation mode",
           "on_command_text": "Personnalisation des commandes d'allumage",
           "vswitch_on_command": "Commande d'allumage (optionnel)",
           "off_command_text": "Personnalisation des commandes d'extinction",
@@ -363,8 +367,22 @@
         "title": "TPI - {name}",
         "description": "Attributs de l'algo Time Proportional Integral&nbsp;[![?](https://img.icons8.com/color/18/help.png)](https://github.com/jmcollin78/versatile_thermostat/blob/main/documentation/fr/algorithms.md#lalgorithme-tpi)",
         "data": {
-          "tpi_coef_int": "coeff_int : Coefficient à utiliser pour le delta de température interne",
-          "tpi_coef_ext": "coeff_ext : Coefficient à utiliser pour le delta de température externe"
+          "tpi_coef_int": "coeff_int",
+          "tpi_coef_ext": "coeff_ext",
+          "tpi_threshold_low": "TPI seuil bas",
+          "tpi_threshold_high": "TPI seuil haut",
+          "minimal_activation_delay": "Délai minimal d'activation",
+          "minimal_deactivation_delay": "Délai de désactivation minimal",
+          "use_tpi_central_config": "Utiliser la configuration TPI centrale"
+        },
+        "data_description": {
+          "tpi_coef_int": "Coefficient à utiliser pour le delta de température interne",
+          "tpi_coef_ext": "Coefficient à utiliser pour le delta de température externe",
+          "tpi_threshold_low": "Seuil en ° en dessous duquel le TPI sera activé. 0 signifie pas de seuil",
+          "tpi_threshold_high": "Seuil en ° au-dessus duquel l'algorithme TPI sera désactivé. 0 signifie pas de seuil",
+          "use_tpi_central_config": "Cochez pour utiliser la configuration TPI centrale. Décochez et saisissez les attributs pour utiliser une configuration TPI spécifique",
+          "minimal_activation_delay": "Délai en secondes en-dessous duquel l'équipement ne sera pas activé",
+          "minimal_deactivation_delay": "Délai en secondes en-dessous duquel l'équipement sera laissé actif"
         }
       },
       "presets": {
@@ -458,7 +476,7 @@
         },
         "data_description": {
           "minimal_activation_delay": "Délai en secondes en-dessous duquel l'équipement ne sera pas activé",
-          "minimal_deactivation_delay": "Délai en secondes en-dessous duquel l'équipement se laissé actif",
+          "minimal_deactivation_delay": "Délai en secondes en-dessous duquel l'équipement sera laissé actif",
           "safety_delay_min": "Délai maximal autorisé en minutes entre 2 mesures de températures. Au-dessus de ce délai, le thermostat se mettra en position de sécurité",
           "safety_min_on_percent": "Seuil minimal de pourcentage de chauffage en-dessous duquel le préréglage sécurité ne sera jamais activé",
           "safety_default_on_percent": "Valeur par défaut pour le pourcentage de chauffage en mode sécurité. Mettre 0 pour éteindre le radiateur en mode sécurité",
@@ -467,7 +485,7 @@
       },
       "central_boiler": {
         "title": "Contrôle de la chaudière centrale - {name}",
-        "description": "Donnez les services à appeler pour allumer/éteindre la chaudière centrale. Le service a appelé doit être formatté comme suit: `entity_id/service_name[/attribut:valeur]` (/attribut:valeur est facultatif)\nPar exemple:\n- pour allumer un switch: `switch.controle_chaudiere/switch.turn_on`\n- pour éteindre un switch: `switch.controle_chaudiere/switch.turn_off`\n- pour programmer la chaudière sur 25° et ainsi forcer son allumage: `climate.thermostat_chaudiere/climate.set_temperature/temperature:25`\n- pour envoyer 10° à la chaudière et ainsi forcer son extinction: `climate.thermostat_chaudiere/climate.set_temperature/temperature:10`&nbsp;[![?](https://img.icons8.com/color/18/help.png)](https://github.com/jmcollin78/versatile_thermostat/blob/main/documentation/fr/feature-central-boiler.md)",
+        "description": "Donnez les services à appeler pour allumer/éteindre la chaudière centrale. Le service à appeler doit être formatté comme suit: `entity_id/service_name[/attribut:valeur]` (/attribut:valeur est facultatif)\nPar exemple:\n- pour allumer un switch: `switch.controle_chaudiere/switch.turn_on`\n- pour éteindre un switch: `switch.controle_chaudiere/switch.turn_off`\n- pour programmer la chaudière sur 25° et ainsi forcer son allumage: `climate.thermostat_chaudiere/climate.set_temperature/temperature:25`\n- pour envoyer 10° à la chaudière et ainsi forcer son extinction: `climate.thermostat_chaudiere/climate.set_temperature/temperature:10`&nbsp;[![?](https://img.icons8.com/color/18/help.png)](https://github.com/jmcollin78/versatile_thermostat/blob/main/documentation/fr/feature-central-boiler.md)",
         "data": {
           "central_boiler_activation_service": "Commande pour allumer",
           "central_boiler_deactivation_service": "Commande pour éteindre"
