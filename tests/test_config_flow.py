@@ -1138,6 +1138,22 @@ async def test_user_config_flow_over_climate_valve(
     ]
     assert result.get("errors") is None
 
+    # 4.bis check that function doesn't contains auto_start_stop
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], user_input={"next_step_id": "features"})
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "features"
+    assert result.get("errors") == {}
+
+    assert result["data_schema"].schema.get("use_window_feature", None) is not None
+    assert result["data_schema"].schema.get("use_motion_feature", None) is not None
+    assert result["data_schema"].schema.get("use_power_feature", None) is not None
+    assert result["data_schema"].schema.get("use_presence_feature", None) is not None
+    assert result["data_schema"].schema.get("use_auto_start_stop_feature", None) is None
+
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], user_input={})
+    assert result["type"] == FlowResultType.MENU
+    assert result["step_id"] == "menu"
+
     # 5. TPI
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], user_input={"next_step_id": "tpi"}
@@ -1190,7 +1206,7 @@ async def test_user_config_flow_over_climate_valve(
             CONF_USE_POWER_FEATURE: False,
             CONF_USE_PRESENCE_FEATURE: False,
             CONF_USE_WINDOW_FEATURE: False,
-            CONF_USE_AUTO_START_STOP_FEATURE: False,
+            # CONF_USE_AUTO_START_STOP_FEATURE: False,
         },
     )
     assert result["type"] == FlowResultType.MENU
@@ -1224,6 +1240,8 @@ async def test_user_config_flow_over_climate_valve(
             CONF_OPENING_DEGREE_LIST: ["number.opening_degree1"],
             CONF_CLOSING_DEGREE_LIST: ["number.closing_degree1"],
             CONF_MIN_OPENING_DEGREES: "10, 20,0",
+            CONF_MAX_CLOSING_DEGREE: "30",
+            CONF_OPENING_THRESHOLD_DEGREE: "5",
         },
     )
     assert result["type"] == FlowResultType.FORM
@@ -1263,6 +1281,8 @@ async def test_user_config_flow_over_climate_valve(
             ],
             CONF_CLOSING_DEGREE_LIST: [],
             CONF_MIN_OPENING_DEGREES: "10, 20,0",
+            CONF_MAX_CLOSING_DEGREE: "30",
+            CONF_OPENING_THRESHOLD_DEGREE: "5",
         },
     )
     assert result["type"] == FlowResultType.MENU
@@ -1360,6 +1380,8 @@ async def test_user_config_flow_over_climate_valve(
         CONF_TPI_COEF_INT: 0.3,
         CONF_TPI_COEF_EXT: 0.1,
         CONF_MIN_OPENING_DEGREES: "10, 20,0",
+        CONF_MAX_CLOSING_DEGREE: 30,
+        CONF_OPENING_THRESHOLD_DEGREE: 5,
         CONF_AUTO_START_STOP_LEVEL: AUTO_START_STOP_LEVEL_NONE,
     }
     assert result["result"]

@@ -84,6 +84,15 @@ STEP_CLIMATE_FEATURES_DATA_SCHEMA = vol.Schema(  # pylint: disable=invalid-name
     }
 )
 
+STEP_CLIMATE_VALVE_FEATURES_DATA_SCHEMA = vol.Schema(  # pylint: disable=invalid-name
+    {
+        vol.Optional(CONF_USE_WINDOW_FEATURE, default=False): cv.boolean,
+        vol.Optional(CONF_USE_MOTION_FEATURE, default=False): cv.boolean,
+        vol.Optional(CONF_USE_POWER_FEATURE, default=False): cv.boolean,
+        vol.Optional(CONF_USE_PRESENCE_FEATURE, default=False): cv.boolean,
+    }
+)
+
 STEP_CENTRAL_FEATURES_DATA_SCHEMA = vol.Schema(  # pylint: disable=invalid-name
     {
         vol.Optional(CONF_USE_WINDOW_FEATURE, default=False): cv.boolean,
@@ -208,26 +217,22 @@ STEP_AUTO_START_STOP = vol.Schema(  # pylint: disable=invalid-name
 STEP_VALVE_REGULATION = vol.Schema(  # pylint: disable=invalid-name
     {
         vol.Required(CONF_OPENING_DEGREE_LIST): selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True
-            ),
+            selector.EntitySelectorConfig(domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True),
         ),
         vol.Optional(CONF_OFFSET_CALIBRATION_LIST): selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True
-            ),
+            selector.EntitySelectorConfig(domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True),
         ),
         vol.Optional(CONF_CLOSING_DEGREE_LIST): selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True
-            ),
+            selector.EntitySelectorConfig(domain=[NUMBER_DOMAIN, INPUT_NUMBER_DOMAIN], multiple=True),
         ),
         vol.Required(CONF_PROP_FUNCTION, default=PROPORTIONAL_FUNCTION_TPI): vol.In(
             [
                 PROPORTIONAL_FUNCTION_TPI,
             ]
         ),
+        vol.Optional(CONF_OPENING_THRESHOLD_DEGREE, default=0): cv.positive_int,
         vol.Optional(CONF_MIN_OPENING_DEGREES, default=""): str,
+        vol.Optional(CONF_MAX_CLOSING_DEGREE, default=100): cv.positive_int,
     }
 )
 
