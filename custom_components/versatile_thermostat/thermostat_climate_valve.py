@@ -168,6 +168,10 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
                         "function": self._proportional_function,
                         "tpi_coef_int": self._tpi_coef_int,
                         "tpi_coef_ext": self._tpi_coef_ext,
+                        "tpi_threshold_low": self._tpi_threshold_low,
+                        "tpi_threshold_high": self._tpi_threshold_high,
+                        "minimal_activation_delay": self._minimal_activation_delay,
+                        "minimal_deactivation_delay": self._minimal_deactivation_delay,
                         "min_opening_degrees": self._min_opening_degrees,
                         "opening_threshold_degree": self._opening_threshold_degree,
                         "max_closing_degree": self._max_closing_degree,
@@ -282,9 +286,9 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
 
     async def _send_regulated_temperature(self, force=False):
         """Sends the regulated temperature to all underlying"""
-        if self.vtherm_hvac_mode == VThermHvacMode_OFF and not self._is_sleeping:
-            _LOGGER.debug("%s - don't send regulated temperature cause VTherm is off ", self)
-            return
+        # if self.vtherm_hvac_mode == VThermHvacMode_OFF and not self._is_sleeping:
+        #    _LOGGER.debug("%s - don't send regulated temperature cause VTherm is off ", self)
+        #    return
 
         if self.target_temperature is None:
             _LOGGER.warning(
@@ -297,16 +301,18 @@ class ThermostatOverClimateValve(ThermostatOverClimate):
         if not force and not self.check_auto_regulation_period_min(self.now):
             return
 
-        for under in self._underlyings:
-            if self.target_temperature != under.last_sent_temperature:
-                await under.set_temperature(
-                    self.target_temperature,
-                    self._attr_max_temp,
-                    self._attr_min_temp,
-                )
+        # Don't send temperature if hvac_mode is off
+        if self.vtherm_hvac_mode != VThermHvacMode_OFF:
+            for under in self._underlyings:
+                if self.target_temperature != under.last_sent_temperature:
+                    await under.set_temperature(
+                        self.target_temperature,
+                        self._attr_max_temp,
+                        self._attr_min_temp,
+                    )
 
-        self._last_regulation_change = self.now
-        self.reset_last_change_time_from_vtherm()
+            self._last_regulation_change = self.now
+            self.reset_last_change_time_from_vtherm()
 
         _LOGGER.debug(
             "%s - last_regulation_change is now: %s and last_change_from_vtherm is now: %s", self, self._last_regulation_change, self._last_change_time_from_vtherm
