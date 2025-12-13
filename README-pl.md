@@ -4,7 +4,7 @@
 [![hacs][hacs_badge]][hacs]
 [![BuyMeCoffee][buymecoffeebadge]][buymecoffee]
 
-# Versatile Thermostat (Wszechstronny Termostat)
+# Versatile Thermostat (Termostat _*VTherm*_)
 
 Ten plik README jest dostępny
 w językach : [Angielski](README.md) | [Francuski](README-fr.md) | [Niemiecki](README-de.md) | [Czeski](README-cs.md) | [Polski](README-pl.md)
@@ -26,8 +26,21 @@ Karta integracji Versatile Thermostat UI (dostępna na [Github](https://github.c
 # Co nowego?
 ![New](images/new-icon.png)
 
+## Wydanie 8.3
+> 1. Dodanie konfigurowalnego opóźnienia przed załączeniem kotła centralnego.
+> 2. Dodanie wyzwalacza kotła centralnego, gdy całkowita moc aktywowana przekroczy założony próg. Aby ta funkcja działała, musisz:
+> - skonfigurować próg mocy, który uruchomi kocioł. Jest to nowa jednostka dostępna w urządzeniu _„Konfiguracja centralna”_.
+> - skonfigurować wartości mocy termostatów _VTherm_. Można to zrobić na pierwszym ekranie konfiguracji każdego termostatu _VTherm_.
+> - zaznaczyć pole „Używane przez kocioł centralny”.
+>
+> Za każdym razem, gdy VTherm jest aktywowany, jego skonfigurowana moc jest dodawana do sumy, a w przypadku przekroczenia progu, kocioł centralny zostanie uruchomiony po opóźnieniu skonfigurowanym w kroku 1.
+>
+> Poprzedni licznik liczby aktywowanych urządzeń i jego progu nadal istnieją. Aby wyłączyć jeden z progów (próg mocy lub próg liczby aktywnych urządzeń), ustaw jego wartość na zero (`0`). Po przekroczeniu któregokolwiek z dwóch niezerowych progów kocioł zostanie uruchomiony. Dlatego pomiędzy dwoma progami stosuje się alternatywę logiczną _'lub'_.
+> 
+> Więcej informacji znajdziesz [tutaj](documentation/pl/feature-central-boiler.md).
+
 ## Wydanie 8.2
-> Added a feature to lock / unlock a VTherm with an optional code. More information [here](documentation/pl/feature-lock.md)
+> Dodano opcjonalną funkcję blokowania/odblokowania termostatu _*VTherm*_ za pomocą kodu PIN. Więcej informacji na ten temat znajduje się [tutaj](documentation/pl/feature-lock.md).
 
 
 ## Wydanie 8.1
@@ -59,7 +72,7 @@ Załóżmy, że co 5 minut otrzymujesz informację zwrotną o zużyciu energii. 
 > Ta wersja integracji zawiera zasadnicze zmiany w stosunku do wersji poprzedniej:
 > - zmianie ulega nazwa zdarzenia z `versatile_thermostat_security_event` na `versatile_thermostat_safety_event`. Jeśli Twoja automatyzacja wykorzystuje to zdarzenie, konieczna jest jej aktualizacja,
 > - atrybuty własne zostały całkowicie zreorganizowane. Wymagana jest odpowiednia aktualizacja Twoich automatyzacji lub szablonów Jinja, korzystających z tych atrybutów,
-> - karta [VTherm UI Card](documentation/en/additions.md#versatile-thermostat-ui-card) musi być zaktualizowana co najmniej do wersji `v2.0`, aby zachować kompatybilność,
+> - karta [VTherm UI Card](documentation/pl/additions.md#versatile-thermostat-ui-card) musi być zaktualizowana co najmniej do wersji `v2.0`, aby zachować kompatybilność,
 >
 > **Pomimo 342 automatycznych testów tej integracji i maksymalnej staranności włożonej w wydanie nowej wersji, nie ma pewności, że jej instalacja nie zakłóci stanu czujników _VTherm_. Po zainstalowaniu aktualizacji, dla każdego sensora _VTherm_ należy sprawdzić presety, tryb HVAC i ewentualnie ustawienie temperatur sensorów _VTherm_.**
 >
@@ -99,25 +112,25 @@ Dla wygody Użytkownika, a także w celu dostępu do pomocy kontekstowej podczas
 6. [Konfigurowanie `termostatu na przełączniku`](documentation/pl/over-switch.md)
 7. [Konfigurowanie `termostatu na klimacie`](documentation/pl/over-climate.md)
 8. [Konfigurowanie `termostatu na zaworze`](documentation/pl/over-valve.md)
-9. [Ustawienia wstępne (presety)](documentation/pl/feature-presets.md)
+9. [Ustawienia presetów](documentation/pl/feature-presets.md)
 10. [Zarządzanie oknami](documentation/pl/feature-window.md)
 11. [Zarządzanie obecnością](documentation/pl/feature-presence.md)
 12. [Zarządzanie ruchem](documentation/pl/feature-motion.md)
 13. [Zarządzanie mocą/zasilaniem](documentation/pl/feature-power.md)
 14. [AutoSTART i autoSTOP](documentation/pl/feature-auto-start-stop.md)
 15. [Scentralizowane zarządzanie wszystkimi termostatami _VTherm_](documentation/pl/feature-central-mode.md)
-16. [Sterowanie centralnym ogrzewaniem / kotłem](documentation/pl/feature-central-boiler.md)
-17. [Zaawansowane ustawienia, tryb bezpieczeństwa](documentation/pl/feature-advanced.md)
+16. [Sterowanie kotłem centralnym](documentation/pl/feature-central-boiler.md)
+17. [Zaawansowane ustawienia, tryb bezpieczny](documentation/pl/feature-advanced.md)
 18. [Samoregulacja](documentation/pl/self-regulation.md)
-19. [Funkcja blokady / odblokowania](documentation/pl/feature-lock.md)
+19. [Funkcja blokady dostępu kodem PIN](documentation/pl/feature-lock.md)
 20. [Algorytmy](documentation/pl/algorithms.md)
-21. [Dokumnetacja referencyjna](documentation/pl/reference.md)
+21. [Dokumentacja referencyjna](documentation/pl/reference.md)
 22. [Przykłady dostrajania układu](documentation/pl/tuning-examples.md)
 23. [Usuwanie problemów](documentation/pl/troubleshooting.md)
 24. [Informacje o wersjach](documentation/pl/releases.md)
 
 ---
-# Kilka wyników...
+# Kilka przykładów...
 
 **Stabilizacja temperatury skonfigurowana dzięki ustawieniu presetu**:
 
@@ -154,7 +167,7 @@ Dla wygody Użytkownika, a także w celu dostępu do pomocy kontekstowej podczas
 | ![testimonial 1](images/testimonials-1.png) | ![testimonial 2](images/testimonials-2.png) | ![testimonial 3](images/testimonials-3.png) |
 | ![testimonial 4](images/testimonials-4.png) | ![testimonial 5](images/testimonials-5.png) | ![testimonial 6](images/testimonials-6.png) |
 
-# ⭐ Star history
+# ⭐ Historia gwiazdek
 
 [![Star History Chart](https://api.star-history.com/svg?repos=jmcollin78/versatile_thermostat&type=Date)](https://star-history.com/#jmcollin78/versatile_thermostat&Date)
 
