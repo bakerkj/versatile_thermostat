@@ -133,6 +133,7 @@ async def test_power_feature_manager(
         type(fake_vtherm).is_over_climate = PropertyMock(return_value=is_over_climate)
         type(fake_vtherm).proportional_algorithm = PropertyMock(return_value=tpi_algo)
         type(fake_vtherm).nb_underlying_entities = PropertyMock(return_value=1)
+        type(fake_vtherm).safe_on_percent = PropertyMock(return_value=1.0)
         fake_vtherm.async_get_last_state = AsyncMock(return_value=None)
 
         ret, power_consumption_max = await power_manager.check_power_available()
