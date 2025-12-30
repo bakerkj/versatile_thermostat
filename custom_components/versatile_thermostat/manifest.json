@@ -2,7 +2,8 @@
   "domain": "versatile_thermostat",
   "name": "Versatile Thermostat",
   "codeowners": [
-    "@jmcollin78"
+    "@jmcollin78",
+    "@bakerkj"
   ],
   "config_flow": true,
   "dependencies": [],
