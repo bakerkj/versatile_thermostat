@@ -122,6 +122,9 @@ To ensure learning data is valid, cycles are invalidated (learning skipped) in s
     -   This breaks the correlation between "Heat Mode ON" and "Temperature Rise".
     -   **Result**: The `BaseThermostat` explicitly flags this state to `AutoTpiManager`. Any cycle containing a Power Shedding event is marked as `interrupted` and **learning is skipped**.
 
+3.  **Heating/Cooling Failure**:
+    -   If a failure (heating not effective or cooling not stopping) is detected by the `FeatureHeatingFailureDetectionManager`, the cycle is marked as interrupted and learning is skipped to avoid learning from a faulty system state.
+
 #### 2.3. Near-Field vs Far-Field Learning Separation
 
 The learning process is designed to separate the responsibilities of `Kint` (near-field, dynamic response) and `Kext` (far-field, equilibrium losses) to ensure robustness and prevent misattribution of errors.
@@ -129,7 +132,7 @@ The learning process is designed to separate the responsibilities of `Kint` (nea
 *   **Case 1: Indoor Coefficient**. This is the primary learning mechanism. It adjusts `CoeffInt` based on the actual temperature rise versus the expected rise.
     *   **Important**: Indoor coefficient learning is **blocked** if the temperature gap is too small (< 0.05°C). This prevents `Kint` from overreacting to minor fluctuations when the system is near the setpoint.
 *   **Case 2: Outdoor Coefficient**. If indoor learning was not possible and the temperature gap is significant (> 0.1°C), it adjusts `CoeffExt` to compensate for losses.
-    *   **Important**: Outdoor coefficient learning is **blocked** if the temperature gap is too large (> 0.5°C). This ensures that `Kext` (which represents equilibrium losses) is not skewed by ramp-up dynamic issues (which are the responsibility of `Kint`).
+    *   **Important**: Outdoor coefficient learning is **blocked** if the temperature gap is too large (> 0.5°C), **except during active overshoot with significant power** (>= 10%). This ensures that `Kext` (which represents equilibrium losses) is not skewed by ramp-up dynamic issues (which are the responsibility of `Kint`), while still allowing correction when overshooting.
 *   **Case 3: Rapid Corrections (Boost/Deboost)**. In parallel, the system monitors critical anomalies:
 
 #### 2.5. Constantes Configurables
@@ -139,9 +142,11 @@ Les constantes suivantes sont définies en haut du fichier `auto_tpi_manager.py`
 | Constante | Valeur par défaut | Description |
 |-----------|-------------------|-------------|
 | `MIN_KINT` | 0.05 | Seuil minimal pour Kint pour maintenir la réactivité à la température |
+| `MIN_DEBOOST_CYCLES` | 20 | Nombre minimum de cycles d'apprentissage avant que le deboost Kint puisse s'activer |
 | `OVERSHOOT_THRESHOLD` | 0.2°C | Seuil de dépassement de température pour déclencher la correction agressive de Kext |
 | `OVERSHOOT_POWER_THRESHOLD` | 0.05 (5%) | Puissance minimale pour considérer le dépassement comme une erreur de Kext |
 | `OVERSHOOT_CORRECTION_BOOST` | 2.0 | Multiplicateur pour alpha (EMA) ou diviseur de poids (Average) lors de la correction |
+| `NATURAL_RECOVERY_POWER_THRESHOLD` | 0.20 (20%) | Puissance maximale en dessous de laquelle on considère qu'un retour à la consigne est naturel (pas d'apprentissage Kext) |
 | `INSUFFICIENT_RISE_GAP_THRESHOLD` | 0.5°C | Écart minimum entre consigne et température pour déclencher la correction Kint si stagnation |
 | `INSUFFICIENT_RISE_BOOST_FACTOR` | 1.08 | Facteur d'augmentation de Kint (8%) par cycle de stagnation |
 | `MAX_CONSECUTIVE_KINT_BOOSTS` | 5 | Nombre maximum de boosts Kint consécutifs avant avertissement (chauffage sous-dimensionné) |
@@ -239,8 +244,8 @@ L'apprentissage extérieur est tenté si l'apprentissage Indoor n'a pas abouti.
     
 **Protection Directionnelle (Natural Recovery) :**   
 *   **Problème** : Lors d'une baisse de consigne (ex: 21° -> 19°), la température est au-dessus de la consigne (Overshoot) et le chauffage peut être encore légèrement actif (Kext). Si l'algorithme apprend à ce moment, il va baisser Kext alors que la température est déjà en train de descendre naturellement vers la cible.
-*   **Solution** : Si on est en Overshoot (Temp > Consigne en Heat) MAIS que la température est en train de descendre (`Temp < Last_Temp`), on **saute l'apprentissage**. 
-*   On considère que la dynamique est naturelle et correcte ("Natural Recovery"). L'algorithme n'intervient que si la température stagne ou monte malgré l'overshoot.
+*   **Solution** : Si on est en Overshoot (Temp > Consigne en Heat) MAIS que la température est en train de descendre (`Temp < Last_Temp`) **ET que la puissance est basse** (`< NATURAL_RECOVERY_POWER_THRESHOLD`, soit 20%), on **saute l'apprentissage**.
+*   **Exception Overshoot avec puissance significative** : Si la puissance est >= 20%, on considère que le système chauffe activement malgré l'overshoot. Cela indique que Kext est trop élevé et doit être corrigé → l'apprentissage a lieu.
 *   *Même logique pour le mode Cool (Undershoot mais température qui remonte).*
 
 #### 5. Algorithme Coefficient Intérieur (Détail)
@@ -263,7 +268,10 @@ L'apprentissage extérieur est tenté si l'apprentissage Indoor n'a pas abouti.
      *   `adjusted_theoretical = min(target_diff, max_achievable_rise)`.
      *   **On vise à combler tout l'écart** (`target_diff`), **mais plafonné par la capacité physique**.
      *   *Raison* : Il est inutile de demander au coefficient d'atteindre une montée physiquement impossible. Cela évite que le coefficient ne s'envole inutilement (saturation) face à de grands écarts.
- 6.  **Calcul du Ratio** : `Ratio = adjusted_theoretical / real_rise`.
+ 6.  **Calcul du Ratio** : 
+     *   `Ratio = (adjusted_theoretical / real_rise) * aggressiveness`.
+     *   **L'aggressiveness** (défaut 0.9) est appliqué directement au ratio pour obtenir des coefficients plus conservateurs.
+     *   *Effet* : Un `aggressiveness` de 0.9 réduit systématiquement le ratio cible de 10%, ce qui donne des coefficients plus faibles.
  7.  **Nouveau Coefficient** : `Coeff_New = Ancien_Coeff * Ratio`.
  8.  **Validation et Plafond** :
      *   Doit être fini et > 0.
@@ -421,10 +429,10 @@ La détection de changement de régime est **uniquement active** lorsque l'appre
 *   **Démarrage (`start_learning`)** : L'appel à `start_learning(reset_data, ...)` (ex: via le service `set_auto_tpi_mode`) :
     *   **Paramètres Optionnels** : le service accepte désormais `allow_kint_boost_on_stagnation` (défaut `False`) et `allow_kext_compensation_on_overshoot` (défaut `False`) pour activer les logiques de correction spécifiques.
     *   **Paramètre `reset_data`** (défaut: `True`) : Contrôle la réinitialisation des données d'apprentissage.
-        *   Si `reset_data=True` : Réinitialise les compteurs, les coefficients (sauf si fournis) et la date de démarrage `learning_start_dt`. La capacité calibrée est **conservée**.
-        *   Si `reset_data=False` : Reprend l'apprentissage en conservant les coefficients, les compteurs et la date de démarrage existants. Seul le flag `autolearn_enabled` est activé.
+        *   Si `reset_data=True` : Réinitialise les compteurs, les coefficients (sauf si fournis), la date de démarrage `learning_start_dt` et les paramètres du cycle courant (`current_cycle_params`). La capacité calibrée est **conservée**. `last_learning_status` est mis à `learning_started`.
+        *   Si `reset_data=False` : Reprend l'apprentissage en conservant les coefficients, les compteurs et la date de démarrage existants. Seul le flag `autolearn_enabled` est activé. `last_learning_status` est mis à `learning_resumed`.
 *   **Arrêt de l'apprentissage (`stop_learning`)** : L'appel à `stop_learning()` (ex: via le service `set_auto_tpi_mode` avec `auto_tpi_mode: false`) provoque :
-    *   **Désactivation de l'apprentissage** : `autolearn_enabled` est mis à `False`, l'apprentissage s'arrête.
+    *   **Désactivation de l'apprentissage** : `autolearn_enabled` est mis à `False`, l'apprentissage s'arrête. `last_learning_status` est mis à `learning_stopped`.
     *   **Préservation de l'état** : Tous les attributs appris (coefficients, compteurs, capacités) sont **conservés** en mémoire et persistés. Cela permet de reprendre l'apprentissage ultérieurement sans perdre les données acquises.
     *   **Synchronisation PropAlgorithm** : Les valeurs de configuration (`_tpi_coef_int`, `_tpi_coef_ext`) sont immédiatement appliquées à l'algorithme proportionnel (`PropAlgorithm.update_parameters()`) pour garantir que la régulation utilise les coefficients de configuration et non les coefficients appris.
 
@@ -438,7 +446,7 @@ Elle est **exclue** du flux de configuration de la configuration centrale, car c
 2.  **Auto TPI - Général** (`auto_tpi_1`) :
     *   Si l'Auto TPI est activé, cette étape permet de configurer les paramètres généraux : mise à jour de la config, notifications, temps de chauffe/refroidissement, coefficient max.
 3.  **Auto TPI - Puissance** (`auto_tpi_2`) :
-    *   Elle permet de saisir manuellement les capacités de chauffe (`auto_tpi_heating_rate`) en °C/h.
+    *   Elle permet de saisir manuellement les capacités de chauffe (`auto_tpi_heating_rate`) en °C/h.\n    *   Le paramètre **Agressivité** (`auto_tpi_aggressiveness`) définit un facteur multiplicateur appliqué au ratio calculé (50-100%, défaut 90%). Des valeurs plus basses donnent des coefficients plus conservateurs, réduisant les risques de dépassement de consigne.
 4.  **Auto TPI - Méthode** (`auto_tpi_2`) :
     *   Choix de la méthode de calcul :
     *   **Moyenne (Average)** : Utilise une moyenne pondérée qui accorde de moins en moins d'importance aux nouvelles valeurs. Idéale pour un apprentissage initial rapide et unique. Ne convient pas à l'apprentissage continu.

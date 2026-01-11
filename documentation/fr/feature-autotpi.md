@@ -45,7 +45,7 @@ Une fois coché, un assistant de configuration dédié s'affiche en plusieurs é
 *   **Temps de chauffe/refroidissement** : Définissez l'inertie de votre radiateur ([voir Configuration Thermique](#configuration-thermique-critique)).
 *   **Plafond Coefficient Intérieur** : Limites de sécurité pour le coefficient Interieur (`max 3.0`). **Remarque** : En cas de modification de cette limite dans le flux de configuration, la nouvelle valeur est **immédiatement** appliquée aux coefficients appris si ces derniers sont supérieurs à la nouvelle limite (ce qui nécessite un rechargement de l'intégration, ce qui est le cas après avoir enregistré une modification via les options).
 
-*   **Taux de chauffe** (`auto_tpi_heating_rate`): Taux cible de montée en température en °C/h. ([voir Configuration des Taux](#configuration-des-taux-de-chauffe) )
+*   **Taux de chauffe** (`auto_tpi_heating_rate`): Taux cible de montée en température en °C/h. ([voir Configuration des Taux](#configuration-des-taux-de-chauffe) )\n*   **Agressivité** (`auto_tpi_aggressiveness`): Facteur multiplicatif appliqué au ratio calculé (50-100%, défaut 100%). Des valeurs plus basses donnent des coefficients plus conservateurs, réduisant le risque de dépassement de consigne.
 
     *Note: On ne veut pas forcément utiliser le taux de chauffe maximal. Vous pouvez tout à fait utiliser une valeur inférieure selon le dimensionnement du chauffage, **et c'est très conseillé**.
     Plus vous serez proche de la capacité maximale, plus le coefficient Kint trouvé lors de l'apprentissage sera elevé.*
@@ -145,6 +145,7 @@ L'Auto TPI fonctionne de manière cyclique :
     *   L'écart de température est significatif.
     *   Le système est stable (pas d'échecs consécutifs).
     *   Le cycle n'a pas été interrompu par un délestage de puissance (Power Shedding), ou une ouverture de fenêtre.
+    *   **Panne détectée** : L'apprentissage est suspendu si une anomalie de chauffage ou climatisation est détectée (ex: température ne monte pas malgré la chauffe), pour éviter d'apprendre des coefficients erronés.
     *   **Chaudière Centrale** : Si le thermostat dépend d'une chaudière centrale, l'apprentissage est suspendu si la chaudière n'est pas activée (même si le thermostat est en demande).
 3.  **Calcul (Apprentissage)** :
     *   **Cas 1 : Coefficient Intérieur**. Si la température a évolué dans le bon sens de manière significative (> 0.05°C), il calcule le ratio entre l'évolution réelle **(sur l'ensemble du cycle, inertie incluse)** et l'évolution théorique attendue (corrigée par la capacité calibrée). Il ajuste `CoeffInt` pour réduire l'écart.
@@ -172,7 +173,7 @@ Un capteur dédié `sensor.<nom_thermostat>_auto_tpi_learning_state` permet de s
 *   `coeff_int_cycles` : Nombre de fois où le coefficient intérieur a été ajusté.
 *   `coeff_ext_cycles` : Nombre de fois où le coefficient extérieur a été ajusté.
 *   `model_confidence` : Indice de confiance (0.0 à 1.0) sur la qualité des réglages. Plafonné à 100% après 50 cycles pour chaque coefficient (même si l'apprentissage continue).
-*   `last_learning_status` : Raison du dernier succès ou échec (ex: `learned_indoor_heat`, `power_out_of_range`).
+*   `last_learning_status` : Statut actuel de l'apprentissage ou raison du dernier résultat. Valeurs du cycle de vie : `learning_started` (nouvel apprentissage), `learning_resumed` (reprise après pause), `learning_stopped` (mis en pause). Exemples de résultats d'apprentissage : `learned_indoor_heat`, `power_out_of_range`.
 *   `calculated_coef_int` / `calculated_coef_ext` : Valeurs actuelles des coefficients.
 *   `learning_start_dt`: Date et heure du début de l'apprentissage (utile pour les graphiques).
 *   `allow_kint_boost_on_stagnation` : Indique si le boost de Kint en cas de stagnation est activé.

@@ -46,6 +46,7 @@ Once checked, a dedicated configuration wizard appears in several steps:
 *   **Indoor Coefficient Cap**: Safety limits for indoor coefficient (`max 3.0`). **Note**: If this limit is changed in the configuration flow, the new value is **immediately** applied to the learned coefficients if they exceed the new limit (which requires an integration reload, which is the case after saving a modification via options).
 
 *   **Heating Rate** (`auto_tpi_heating_rate`): Target rate of temperature increase in °C/h. ([see rates Configuration](#heating-rate-configuration))
+*   **Aggressiveness** (`auto_tpi_aggressiveness`): Multiplicative factor applied to the calculated ratio (50-100%, default 100%). Lower values make the coefficient adjustment more conservative.
 
     *Note: You don’t necessarily want to use the maximum heating rate. You can perfectly well use a lower value depending on the heating system sizing, **and it is highly recommended**.
     The closer you are to the maximum capacity, the higher the Kint coefficient determined during the learning process will be.*
@@ -145,6 +146,7 @@ Auto TPI operates cyclically:
     *   The temperature difference is significant.
     *   The system is stable (no consecutive failures).
     *   The cycle was not interrupted by power shedding or by a window being opened.
+    *   **Failure detected**: Learning is suspended if a heating or cooling anomaly is detected (e.g., temperature not rising despite heating), to avoid learning incorrect coefficients.
     *   **Central Boiler**: If the thermostat depends on a central boiler, learning is suspended if the boiler is not activated (even if the thermostat is calling for heat).
 3.  **Calculation (Learning)**:
     *   **Case 1: Indoor Coefficient**. If the temperature moved in the right direction significantly (> 0.05°C), it calculates the ratio between the real evolution **(over the full cycle, including inertia)** and the expected theoretical evolution (corrected by the calibrated capacity). It adjusts `CoeffInt` to reduce the gap.
@@ -172,7 +174,7 @@ A dedicated sensor `sensor.<thermostat_name>_auto_tpi_learning_state` allows tra
 *   `coeff_int_cycles`: Number of times the indoor coefficient has been adjusted.
 *   `coeff_ext_cycles`: Number of times the outdoor coefficient has been adjusted.
 *   `model_confidence`: Confidence index (0.0 to 1.0) in the quality of the settings. Capped at 100% after 50 cycles for each coefficient (even if learning continues).
-*   `last_learning_status`: Reason for the last success or failure (e.g., `learned_indoor_heat`, `power_out_of_range`).
+*   `last_learning_status`: Current learning status or reason for the last outcome. Lifecycle values: `learning_started` (new learning), `learning_resumed` (resumed after pause), `learning_stopped` (paused). Learning outcome examples: `learned_indoor_heat`, `power_out_of_range`.
 *   `calculated_coef_int` / `calculated_coef_ext`: Current values of the coefficients.
 *   `learning_start_dt`: Date and time when learning started (useful for graphs).
 *   `allow_kint_boost_on_stagnation`: Indicates if Kint boost on stagnation is enabled.
