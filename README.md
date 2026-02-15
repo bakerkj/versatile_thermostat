@@ -38,7 +38,7 @@ Versatile Thermostat UI Card (Available on [Github](https://github.com/jmcollin7
 > These anomalies may indicate an open window, a faulty radiator, or an external heat source. The feature sends events that can be used to trigger automations (notifications, alerts, etc.). More information [here](documentation/en/feature-heating-failure-detection.md).
 
 ## Release 8.4
-> 1. added auto TPI (experimental). This new feature allows automatically calculating the best coefficients for the TPI algorithm. More information [here](./auto_tpi_internal_doc.md)
+> 1. added auto TPI (experimental). This new feature allows automatically calculating the best coefficients for the TPI algorithm. More information [here](documentation/en/feature-auto_tpi.md)
 > 2. added a temperature synchronization function for a device controlled in `over_climate` mode. Depending on your device's capabilities, _VTherm_ can control an offset calibration entity or directly an external temperature entity. More information [here](documentation/en/feature-sync_device_temp.md),
 > 3. added a feature named "timed preset" which aims to select a preset for a certain duration and come back to the previous preset after the expiration of the delay. The new feature is totally described [here](documentation/en/feature-timed-preset.md).
 
@@ -99,16 +99,17 @@ The documentation is now divided into several pages for easier reading and searc
 15. [Centralized control of all VTherms](documentation/en/feature-central-mode.md)
 16. [Central heating control](documentation/en/feature-central-boiler.md)
 17. [Advanced aspects, security mode](documentation/en/feature-advanced.md)
-18. [Self-regulation](documentation/en/self-regulation.md)
-19. [Auto TPI learning](documentation/en/feature-autotpi.md)
-20. [Algorithms](documentation/en/algorithms.md)
-21. [Lock / Unlock](documentation/en/feature-lock.md)
-22. [Temperature synchronisation](documentation/en/feature-sync_device_temp.md)
-23. [Timed preset](documentation/en/feature-timed-preset.md)
-24. [Reference documentation](documentation/en/reference.md)
-25. [Tuning examples](documentation/en/tuning-examples.md)
-26. [Troubleshooting](documentation/en/troubleshooting.md)
-27. [Release notes](documentation/en/releases.md)
+18. [Heating Failure Detection](documentation/en/feature-heating-failure-detection.md)
+19. [Self-regulation](documentation/en/self-regulation.md)
+20. [Auto TPI learning](documentation/en/feature-autotpi.md)
+21. [Algorithms](documentation/en/algorithms.md)
+22. [Lock / Unlock](documentation/en/feature-lock.md)
+23. [Temperature synchronisation](documentation/en/feature-sync_device_temp.md)
+24. [Timed preset](documentation/en/feature-timed-preset.md)
+25. [Reference documentation](documentation/en/reference.md)
+26. [Tuning examples](documentation/en/tuning-examples.md)
+27. [Troubleshooting](documentation/en/troubleshooting.md)
+28. [Release notes](documentation/en/releases.md)
 
 # Some results
 

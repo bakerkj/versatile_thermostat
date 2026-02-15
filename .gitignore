@@ -113,3 +113,10 @@ custom_components/localtuya
 
 .coverage
 htmlcov
+
+#venv
+.venv
+
+.agent
+
+dev_tests/
