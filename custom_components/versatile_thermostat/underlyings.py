@@ -962,7 +962,7 @@ class UnderlyingClimate(UnderlyingEntity):
         _LOGGER.info("%s - Set setpoint temperature to: %s", self, target_temp)
 
         # Issue 807 add TARGET_TEMPERATURE only if in the features
-        if ClimateEntityFeature.TARGET_TEMPERATURE_RANGE in self.supported_features:
+        if False and ClimateEntityFeature.TARGET_TEMPERATURE_RANGE in self.supported_features:
             data.update(
                 {
                     "target_temp_high": target_temp,
