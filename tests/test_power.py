@@ -144,6 +144,75 @@ async def test_power_feature_manager(
             assert power_consumption_max == 1234
 
 
+async def test_power_feature_manager_reserves_startup_power_per_underlying_for_multi_underlyings(
+    hass: HomeAssistant,
+):
+    """A multi-underlying VTherm must reserve startup power per underlying."""
+
+    fake_vtherm = MagicMock(spec=BaseThermostat)
+    fake_vtherm.entity_id = "climate.theoverswitchmockname"
+    type(fake_vtherm).name = PropertyMock(return_value="the name")
+    type(fake_vtherm).is_device_active = PropertyMock(return_value=False)
+    type(fake_vtherm).is_over_climate = PropertyMock(return_value=False)
+    type(fake_vtherm).nb_underlying_entities = PropertyMock(return_value=4)
+    type(fake_vtherm).safe_on_percent = PropertyMock(return_value=0.1)
+    fake_vtherm.async_get_last_state = AsyncMock(return_value=None)
+
+    vtherm_api: VersatileThermostatAPI = VersatileThermostatAPI.get_vtherm_api(hass)
+    power_manager = FeaturePowerManager(fake_vtherm, hass)
+
+    vtherm_api.find_central_configuration = MagicMock()
+    vtherm_api.central_power_manager.post_init(
+        {
+            CONF_POWER_SENSOR: "sensor.the_power_sensor",
+            CONF_MAX_POWER_SENSOR: "sensor.the_max_power_sensor",
+            CONF_USE_POWER_FEATURE: True,
+            CONF_PRESET_POWER: 13,
+        }
+    )
+    vtherm_api.central_power_manager._current_power = 730
+    vtherm_api.central_power_manager._current_max_power = 1000
+
+    power_manager.post_init(
+        {
+            CONF_USE_POWER_FEATURE: True,
+            CONF_PRESET_POWER: 10,
+            CONF_DEVICE_POWER: 1000,
+        }
+    )
+
+    await power_manager.start_listening()
+
+    ret, power_consumption_max = await power_manager.check_power_available("switch.one")
+    assert ret is True
+    assert power_consumption_max == 250
+
+    power_manager.add_power_consumption_to_central_power_manager("switch.one")
+    assert vtherm_api.central_power_manager.started_vtherm_total_power == 250
+    assert len(vtherm_api.central_power_manager._started_vtherm_total_power_by_id) == 1  # pylint: disable=protected-access
+
+    # Re-checking the same underlying must stay idempotent.
+    ret, power_consumption_max = await power_manager.check_power_available("switch.one")
+    assert ret is True
+    assert power_consumption_max == 250
+
+    power_manager.add_power_consumption_to_central_power_manager("switch.one")
+    assert vtherm_api.central_power_manager.started_vtherm_total_power == 250
+    assert len(vtherm_api.central_power_manager._started_vtherm_total_power_by_id) == 1  # pylint: disable=protected-access
+
+    # A distinct underlying must be denied because only one 250W slice is available.
+    ret, power_consumption_max = await power_manager.check_power_available("switch.two")
+    assert ret is False
+    assert power_consumption_max == 250
+
+    power_manager.sub_power_consumption_to_central_power_manager("switch.one")
+    assert vtherm_api.central_power_manager.started_vtherm_total_power == 0
+
+    # Releasing the reservation multiple times must stay idempotent as well.
+    power_manager.sub_power_consumption_to_central_power_manager("switch.one")
+    assert vtherm_api.central_power_manager.started_vtherm_total_power == 0
+
+
 @pytest.mark.parametrize(
     "current_overpowering_state, is_overpowering, new_overpowering_state, msg_sent",
     [
@@ -1016,14 +1085,16 @@ async def test_power_management_over_climate_valve(
     await vtherm.async_set_preset_mode(VThermPreset.COMFORT)  # 19
     await wait_for_local_condition(lambda: vtherm.proportional_algorithm.on_percent == 0.4)  # 0.4 = (19-18)*0.3 + (19-18)*0.1
 
+    await wait_for_local_condition(lambda: fake_opening_degree.native_value == 40)
+    await wait_for_local_condition(lambda: vtherm._underlyings_valve_regulation[0].state_manager.get_state("number.mock_opening_degree").state == "40.0")
+
     assert vtherm.hvac_action is HVACAction.HEATING
     assert vtherm.vtherm_hvac_mode is VThermHvacMode_HEAT
     assert vtherm.total_energy == 0.0
     assert vtherm.power_manager.mean_cycle_power == 1 * 0.4  # device_power * on_percent
 
-    # sometimes this test failed here
-    await asyncio.sleep(0.1)  # wait for the async_set_hvac_mode and async_set_preset_mode to be processed
-    await wait_for_local_condition(lambda: fake_underlying_climate.hvac_mode == HVACMode.HEAT and fake_underlying_climate.hvac_action == HVACAction.HEATING)
+    await wait_for_local_condition(lambda: fake_underlying_climate.hvac_mode == HVACMode.HEAT, 5)
+    await wait_for_local_condition(lambda: fake_underlying_climate.hvac_action == HVACAction.HEATING, 10)
     await wait_for_local_condition(lambda: vtherm._underlying_climate_start_hvac_action_date is not None)
 
     # 3. simulate a cycle that should calculate energy

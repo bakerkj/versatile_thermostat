@@ -47,11 +47,12 @@
           "use_lock_central_config": "Zentrale Sperrkonfiguration verwenden",
           "lock_code": "Optionaler PIN-Code (4 Ziffern)",
           "lock_users": "Sperre verhindert Benutzerbefehle",
-          "lock_automations": "Sperre verhindert Befehle von Automatisierungen und Integrationen (z.B. Planer)"
+          "lock_automations": "Sperre verhindert Befehle von Automatisierungen und Integrationen (z.B. Planer)",
+          "auto_relock_sec": "Automatische Wiederverriegelung"
         },
         "data_description": {
           "use_lock_central_config": "Aktivieren für zentrale Sperrkonfiguration. Deaktivieren für sperrspezifische Konfiguration dieses VTherm",
-          "lock_code": "Der PIN-Code zum Entsperren des Thermostats (4 Ziffern)" 
+          "auto_relock_sec": "Verzögerung in Sekunden bevor nach dem Entsperren automatisch wieder verriegelt wird. 0 zum Deaktivieren. Standardwert ist 30 Sekunden."
         }
       },
       "main": {
@@ -239,12 +240,14 @@
           "safety_delay_min": "Maximale Zeitspanne zwischen zwei Temperaturmessungen",
           "safety_min_on_percent": "Mindestprozentsatz der Leistung",
           "safety_default_on_percent": "Prozentuale Leistungsaufnahme im Sicherheitsmodus",
+          "repair_incorrect_state": "Fehlerhafte Zustand reparieren",
           "use_advanced_central_config": "Erweiterte zentrale Konfiguration verwenden"
         },
         "data_description": {
           "safety_delay_min": "Maximal zulässige Zeitspanne in Minuten zwischen zwei Temperaturmessungen. Nach Ablauf dieser Zeitspanne schaltet der Thermostat in den Sicherheitsmodus.",
           "safety_min_on_percent": "Mindestprozentsatz für die Heizleistung, unterhalb dessen die Sicherheitsvoreinstellung niemals aktiviert wird.",
           "safety_default_on_percent": "Standardwert für den Heizungsprozentsatz im Sicherheitsmodus. 0 schaltet den Heizkörper im Sicherheitsmodus aus.",
+          "repair_incorrect_state": "Repariert automatisch den fehlerhaften Zustand der zugrunde liegenden Entitäten, wenn dieser erkannt wird. Die Funktion sendet den gewünschten Befehl erneut, wenn der Zustand des zugrunde liegenden Geräts nicht den erwarteten Zustand erfüllt.",
           "use_advanced_central_config": "Wenn aktiviert wird die zentrale erweiterte Konfiguration verwendet. Deaktivieren und Attribute eingeben um eine spezifische erweiterte Konfiguration zu verwenden."
         }
       },
@@ -254,12 +257,14 @@
         "data": {
           "central_boiler_activation_service": "Befehl zum Einschalten",
           "central_boiler_deactivation_service": "Befehl zum Ausschalten",
-          "central_boiler_activation_delay_sec": "Verzögerung bei der Aktivierung (Sekunden)"
+          "central_boiler_activation_delay_sec": "Verzögerung bei der Aktivierung (Sekunden)",
+          "keep_alive_boiler_delay_sec": "Verzögerung für Keep-Alive (Sekunden)"
         },
         "data_description": {
           "central_boiler_activation_service": "Befehl zum Einschalten des Zentralheizungskessels, im Format: entity_id/service_name[/attribut:wert]",
           "central_boiler_deactivation_service": "Befehl zum Ausschalten des Zentralheizungskessels, Format: entity_id/service_name[/attribut:wert]",
-          "central_boiler_activation_delay_sec": "Verzögerung in Sekunden vor der Aktivierung des Zentralheizungskessels, wenn dieser eingeschaltet werden soll"
+          "central_boiler_activation_delay_sec": "Verzögerung in Sekunden vor der Aktivierung des Zentralheizungskessels, wenn dieser eingeschaltet werden soll",
+          "keep_alive_boiler_delay_sec": "Verzögerung in Sekunden zum Weiterleiten des Kesselbefehls, wenn Keep-Alive aktiviert ist. Setzen Sie auf 0, um Keep-Alive zu deaktivieren."
         }
       },
       "valve_regulation": {
@@ -293,7 +298,7 @@
           "auto_tpi_learning_type": "Art des Lernens",
           "heater_heating_time": "Aufheizzeit (min)",
           "heater_cooling_time": "Auskühlzeit (min)",
-          "auto_tpi_heating_rate": "Aufheizgeschwindigkeit ({Einheit}/h)",
+          "auto_tpi_heating_rate": "Aufheizgeschwindigkeit ({unit}/h)",
           "auto_tpi_aggressiveness": "Aggressivität",
           "auto_tpi_enable_advanced_settings": "Erweiterte Einstellungen aktivieren"
         },
@@ -301,7 +306,7 @@
           "auto_tpi_learning_type": "Wähle 'Erkundung' für den ersten Start (gewichteter Durchschnitt, Gewicht 1) oder 'Feinabstimmung' für kontinuierliche Anpassungen (EWMA, Alpha 0,08).",
           "heater_heating_time": "Zeit bis zum Erreichen der vollen Leistung (Minuten)",
           "heater_cooling_time": "Abkühlzeit nach dem Ausschalten (Minuten)\n\n| Typ | Aufheizzeit | Abkühlzeit |\n| :--- | :--- | :--- |\n| Elektroheizkörper | 5 Min. | 7 Min. |\n| Wasserheizkörper | 15 Min. | 20 Min. |\n| Fußbodenheizung | 30 Min. | 45 Min. |",
-          "auto_tpi_heating_rate": "Temperaturanstiegskapazität des Heizkörpers ({Einheit} pro Stunde). Kann über den Aktionsdienst 'Kapazität kalibrieren' geschätzt werden.",
+          "auto_tpi_heating_rate": "Temperaturanstiegskapazität des Heizkörpers ({unit} pro Stunde). Kann über den Aktionsdienst 'Kapazität kalibrieren' geschätzt werden.",
           "auto_tpi_aggressiveness": "Skalierungsfaktor für die gelernten Koeffizienten (50-100 %). Niedrigere Werte führen zu konservativeren Koeffizienten und verringern das Risiko einer Überschreitung des Sollwerts.",
           "auto_tpi_enable_advanced_settings": "Aktivieren Sie diese Option, um die Feinabstimmung der Parameter (Alpha, Abklingen, Gewicht) vorzunehmen."
         }
@@ -424,11 +429,12 @@
           "use_lock_central_config": "Zentrale Sperrkonfiguration verwenden",
           "lock_code": "Optionaler PIN (4 Ziffern)",
           "lock_users": "Sperre verhindert Benutzerbefehle",
-          "lock_automations": "Sperre verhindert Befehle von Automatisierungen und Integrationen (z.B. Planer)"
+          "lock_automations": "Sperre verhindert Befehle von Automatisierungen und Integrationen (z.B. Planer)",
+          "auto_relock_sec": "Automatische Wiederverriegelung"
         },
         "data_description": {
           "use_lock_central_config": "Aktivieren für zentrale Sperrkonfiguration. Deaktivieren für spezifische Sperrkonfiguration dieses VTherm",
-          "lock_code": "Der PIN-Code zum Entsperren des Thermostats (4 Ziffern)"
+          "auto_relock_sec": "Verzögerung in Sekunden bevor nach dem Entsperren automatisch wieder verriegelt wird. 0 zum Deaktivieren. Standardwert ist 30 Sekunden."
         }
       },
       "main": {
@@ -618,6 +624,7 @@
           "safety_delay_min": "Maximale Zeitspanne zwischen zwei Temperaturmessungen",
           "safety_min_on_percent": "Mindestleistungsanteil in Prozent",
           "safety_default_on_percent": "Prozentuale Leistungsaufnahme im Sicherheitsmodus",
+          "repair_incorrect_state": "Fehlerhafte Zustand reparieren",
           "use_advanced_central_config": "Erweiterte zentrale Konfiguration verwenden"
         },
         "data_description": {
@@ -626,6 +633,7 @@
           "safety_delay_min": "Maximal zulässige Zeitspanne in Minuten zwischen zwei Temperaturmessungen. Nach Ablauf dieser Zeitspanne schaltet der Thermostat in den Sicherheitsmodus.",
           "safety_min_on_percent": "Mindestprozentsatz für die Heizleistung, unter der die Sicherheitsvoreinstellung niemals aktiviert wird.",
           "safety_default_on_percent": "Standardwert der Heizleistung in Prozent im Sicherheitsmodus. Auf 0 setzen, um den Heizkörper im Sicherheitsmodus auszuschalten.",
+          "repair_incorrect_state": "Repariert automatisch den fehlerhaften Zustand der zugrunde liegenden Entitäten, wenn dieser erkannt wird. Die Funktion sendet den gewünschten Befehl erneut, wenn der Zustand des zugrunde liegenden Geräts nicht den erwarteten Zustand erfüllt.",
           "use_advanced_central_config": "Aktivieren, um die erweiterte zentrale Konfiguration zu verwenden. Deaktivieren und Attribute eingeben, wenn eine separate erweiterte Konfiguration verwendet werden soll."
         }
       },
@@ -635,12 +643,14 @@
         "data": {
           "central_boiler_activation_service": "Einschaltbefehl",
           "central_boiler_deactivation_service": "Ausschaltbefehl",
-          "central_boiler_activation_delay_sec": "Verzögerung bei der Aktivierung (Sekunden)"
+          "central_boiler_activation_delay_sec": "Verzögerung bei der Aktivierung (Sekunden)",
+          "keep_alive_boiler_delay_sec": "Verzögerung für Keep-Alive (Sekunden)"
         },
         "data_description": {
           "central_boiler_activation_service": "Befehl zum Einschalten des Zentralheizungskessels, im Format: entity_id/service_name[/attribut:wert]",
           "central_boiler_deactivation_service": "Befehl zum Ausschalten des Zentralheizungskessels, Format: entity_id/service_name[/attribut:wert]",
-          "central_boiler_activation_delay_sec": "Verzögerung in Sekunden vor der Aktivierung des Zentralheizungskessels, wenn dieser eingeschaltet werden soll"
+          "central_boiler_activation_delay_sec": "Verzögerung in Sekunden vor der Aktivierung des Zentralheizungskessels, wenn dieser eingeschaltet werden soll",
+          "keep_alive_boiler_delay_sec": "Verzögerung in Sekunden zum Weiterleiten des Kesselbefehls, wenn Keep-Alive aktiviert ist. Setzen Sie auf 0, um Keep-Alive zu deaktivieren."
         }
       },
       "valve_regulation": {
@@ -667,12 +677,24 @@
           "max_closing_degree": "Maximale Schließung. Das Ventil wird niemals über diesen Wert hinaus geschlossen. Bei einem Wert von 100, schliesst das Ventil vollständig."
         }
       },
+      "sync_device_internal_temp": {
+        "title": "Synchronisierung der internen Temperatur der zugeordneten Geräte",
+        "description": "Konfiguration der Synchronisierung der internen Temperaturen der zugeordneten Geräte",
+        "data": {
+          "sync_with_calibration": "Anwendung einer Kalibrierung",
+          "sync_entity_ids": "Für die Synchronisierung verwendete Entity-IDs"
+        },
+        "data_description": {
+          "sync_with_calibration": "Ist die Option aktiviert, wird die Offset-Kalibrierung bei der Synchronisierung der Innentemperatur angewendet. Deaktivieren, um die Temperatur direkt in die ausgewählten Elemente zu kopieren.",
+          "sync_entity_ids": "Entitie-Liste, die zur Synchronisierung der internen Temperatur der zugeordneten Geräte verwendet werden. Es muss eine pro zugeordnetem Gerät vorhanden sein. Wenn es aktiviert ist, muss eine Kalibrierungsentität vorhanden sein, ansonsten eine Temperaturentity. Beides sind Entities vom Typ `number`."
+        }
+      },
       "auto_tpi_configuration": {
         "title": "Auto TPI - Konfiguration - {name}",
         "description": "Allgemeine Parameter für das Auto-TPI-Lernen.",
         "data": {
           "auto_tpi_learning_type": "Art des Lernens",
-          "auto_tpi_heating_rate": "Aufheizrate ({Einheit}/h)",
+          "auto_tpi_heating_rate": "Aufheizrate ({unit}/h)",
           "heater_heating_time": "Aufheizzeit (min)",
           "heater_cooling_time": "Abkühlzeit (min)",
           "auto_tpi_aggressiveness": "Aggressivität",
@@ -680,7 +702,7 @@
         },
         "data_description": {
           "auto_tpi_learning_type": "Wähle 'Erkundung' für den ersten Start (gewichteter Durchschnitt, Gewicht 1) oder 'Feinabstimmung' für kontinuierliche Anpassungen (EWMA, Alpha 0,08).",
-          "auto_tpi_heating_rate": "Temperaturanstiegskapazität des Heizkörpers ({Einheit} pro Stunde). Kann über den Aktionsdienst 'Kapazität kalibrieren' geschätzt werden.",
+          "auto_tpi_heating_rate": "Temperaturanstiegskapazität des Heizkörpers ({unit} pro Stunde). Kann über den Aktionsdienst 'Kapazität kalibrieren' geschätzt werden.",
           "heater_heating_time": "Zeit bis zum Erreichen der vollen Leistung (Minuten)",
           "heater_cooling_time": "Abkühlzeit nach dem Ausschalten (Minuten)\n\n| Typ | Aufheizzeit | Abkühlzeit |\n| :--- | :--- | :--- |\n| Elektroheizkörper | 5 Min. | 7 Min. |\n| Wasserheizkörper | 15 Min. | 20 Min. |\n| Fußbodenheizung | 30 Min. | 45 Min. |",
           "auto_tpi_aggressiveness": "Skalierungsfaktor für die gelernten Koeffizienten (50–100 %). Niedrigere Werte führen zu konservativeren Koeffizienten und verringern das Risiko einer Überschreitung des Sollwerts.",
@@ -707,18 +729,6 @@
         "data_description": {
           "auto_tpi_ema_alpha": "Glättungsfaktor (0-1). Höher = schnellere Anpassung",
           "auto_tpi_ema_decay_rate": "Rate, mit der Alpha im Laufe der Zeit abnimmt (Stabilisierung)"
-        }
-      },
-      "sync_device_internal_temp": {
-        "title": "Synchronisierung der internen Temperatur der zugeordneten Geräte",
-        "description": "Konfiguration der Synchronisierung der internen Temperaturen der zugeordneten Geräte",
-        "data": {
-          "sync_with_calibration": "Anwendung einer Kalibrierung",
-          "sync_entity_ids": "Für die Synchronisierung verwendete Entity-IDs"
-        },
-        "data_description": {
-          "sync_with_calibration": "Ist die Option aktiviert, wird die Offset-Kalibrierung bei der Synchronisierung der Innentemperatur angewendet. Deaktivieren, um die Temperatur direkt in die ausgewählten Elemente zu kopieren.",
-          "sync_entity_ids": "Entitie-Liste, die zur Synchronisierung der internen Temperatur der zugeordneten Geräte verwendet werden. Es muss eine pro zugeordnetem Gerät vorhanden sein. Wenn es aktiviert ist, muss eine Kalibrierungsentität vorhanden sein, ansonsten eine Temperaturentity. Beides sind Entities vom Typ `number`."
         }
       },
       "heating_failure_detection": {
@@ -813,13 +823,13 @@
         "auto_start_stop_slow": "Langsam",
         "auto_start_stop_medium": "Mittel",
         "auto_start_stop_fast": "Schnell"
-       }
+      }
     },
     "auto_tpi_calculation_method": {
       "options": {
         "average": "Durchschnitt",
         "ema": "Exponentialer gleitender Durchschnitt (EMA)"
-     }
+      }
     },
     "auto_tpi_learning_type": {
       "options": {
